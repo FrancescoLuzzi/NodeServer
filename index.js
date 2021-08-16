@@ -1,6 +1,17 @@
 const express = require('express');
+const cors= require('cors');
 const app = express();
+const bodyParser=require('body-parser');
 const mariadb=require('mariadb');
+
+app.use(cors({
+    origin: "*",
+}));
+app.use(express.json())
+app.use(bodyParser.urlencoded({
+    extended: true
+    })
+);
 
 const pool = mariadb.createPool({
     host: 'localhost', 
@@ -8,6 +19,7 @@ const pool = mariadb.createPool({
     password: process.env.MARIADB_PASSWORD,
     database: "scontrini"
 });
+
 
 
 const port= process.env.PORT || 3000;
