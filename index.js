@@ -22,19 +22,20 @@ const pool = mariadb.createPool({
 
 
 
-const port= process.env.PORT || 3000;
+const port= process.env.PORT || 8000;
 
 const get_tipologie="SELECT * FROM tipologia";
 const insert_tipo="INSERT INTO tipologia(tipo) VALUES (?)";
 const delete_tipo="DELETE FROM tipologia WHERE tipo=?";
 
 const get_scontrini="SELECT * FROM scontr WHERE YEAR(data)=?";
+const get_scontrini_by_type= get_scontrini + " AND tipo=?"
 const get_scontrini_by_month=get_scontrini+" AND MONTH(data)=?";
 const get_scontrini_by_month_and_type=get_scontrini_by_month+" AND tipo=?";
 const get_scontrini_by_date="SELECT * FROM scontr WHERE data=?";
-const get_scontrini_by_week="SELECT * FROM scontr WHERE WEEK(data)=WEEK(?)"
+const get_scontrini_by_week="SELECT * FROM scontr WHERE WEEK(data)=WEEK(?) AND YEAR(data)=?"
 const add_scontrino="INSERT INTO scontr(tipo, data, prezzo, descrizione) VALUES (?, ?, ?, ?)";
-const delete_scontrino="DELETE FROM scontr WHERE tipo=? AND data=? AND prezzo=?";
+const delete_scontrino="DELETE FROM scontr WHERE id=?";
 
 const checker_no_digits= new RegExp("\\d+");
 const checker_format= new RegExp("[A-Z]{1}[a-z]+");
@@ -74,7 +75,7 @@ pool.getConnection()
             let tipo=req.query.tipo;
             try{
                 checkFormat(tipo);
-                conn.query(insert_tipo,(tipo))
+                conn.query(insert_tipo,[tipo])
                 .then((result)=>{
                         res.send(`${tipo} aggiunto al db`);
                     }
@@ -90,7 +91,7 @@ pool.getConnection()
             let tipo=req.query.tipo;
             try{
             checkFormat(tipo);
-            conn.query(delete_tipo,(tipo))
+            conn.query(delete_tipo,[tipo])
                 .then((result)=>{
                     res.send(`${tipo} rimosso dal db`);
                 })
@@ -109,24 +110,24 @@ pool.getConnection()
         app.post('/api/addScontrino', function (req, res){
             let tipo=req.body.tipo;
             let data=req.body.data;
-            let prezzo=req.body.tipo;
+            let prezzo=req.body.prezzo;
             let descrizione=req.body.descrizione;
-            conn.query(add_scontrino,(tipo, data, prezzo, descrizione))
+            console.log([tipo, data, prezzo, descrizione]);
+
+            conn.query(add_scontrino,[tipo, data, prezzo, descrizione])
                 .then((result)=>{
-                    res.send(`Aggiunto nuovo scontrino`);
+                    console.log(`Aggiunto nuovo scontrino`);
                 })
                 .catch((err)=>{
-                    res.send(err);
+                    console.log(err);
                 });
         });
 
         //elimino scontrino
         //dovrà essere .delete
-        app.post('/api/deleteScontrino', function (req, res){
-            let tipo=req.body.tipo;
-            let data=req.body.data;
-            let prezzo=req.body.tipo;
-            conn.query(delete_scontrino,(tipo, data, prezzo))
+        app.get('/api/deleteScontrino', function (req, res){
+            let id=req.query.id;
+            conn.query(delete_scontrino,[id])
                 .then((result)=>{
                     res.send(`Scontrino eliminato`);
                 })
@@ -139,7 +140,21 @@ pool.getConnection()
         app.get('/api/getScontrini', function (req, res) {
             let year=req.query.year;
             if(year==null)res.send("year not defined");
-            conn.query(get_scontrini,(year))
+            conn.query(get_scontrini,[year])
+            .then((result)=>{
+                res.send(result);
+            })
+            .catch((err)=>{
+                res.send(err);
+            });
+        });
+
+        //ritorna tutti gli scontrini in un anno e tipo
+        app.get('/api/getScontriniByType', function (req, res) {
+            let year=req.query.year;
+            let tipo=req.query.tipo;
+            if(year==null)res.send("year not defined");
+            conn.query(get_scontrini_by_type,[year,tipo])
             .then((result)=>{
                 res.send(result);
             })
@@ -152,7 +167,7 @@ pool.getConnection()
         app.get("/api/getScontriniByMonth", function (req, res) {
             let year= req.query.year;
             let month= req.query.month;
-            conn.query(get_scontrini_by_month,(year, month))
+            conn.query(get_scontrini_by_month,[year, month])
             .then((result)=>{
                 res.send(result);
             })
@@ -166,7 +181,10 @@ pool.getConnection()
             let year= req.query.year;
             let month= req.query.month;
             let tipo=req.query.tipo;
-            conn.query(get_scontrini_by_month_and_type,(year, month, tipo))
+            console.log(year);
+            console.log(month);
+            console.log(tipo);
+            conn.query(get_scontrini_by_month_and_type,[year, month, tipo])
             .then((result)=>{
                 res.send(result);
             })
@@ -180,7 +198,7 @@ pool.getConnection()
             let date= req.query.date;
             try{
                 checkDate(date);
-                conn.query(get_scontrini_by_date,(date))
+                conn.query(get_scontrini_by_date,[date])
                 .then((result)=>{
                     res.send(result);
                 })
@@ -195,9 +213,10 @@ pool.getConnection()
         //ritorna tutti gli scontrini di una settimana
         app.get("/api/getScontriniByWeek", function (req, res) {
             let date= req.query.date;
+            let year= date.split('-')[0];
             try{
                 checkDate(date);
-                conn.query(get_scontrini_by_week,(date))
+                conn.query(get_scontrini_by_week,[date, year])
                 .then((result)=>{
                     res.send(result);
                 })
@@ -212,9 +231,6 @@ pool.getConnection()
         //applicazione setuppata e ora la lancio
         app.listen(port);
         
-    }).catch(err => {
-      //not connected
-        console.log("errore connessione db")
     });
 
 
