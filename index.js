@@ -3,18 +3,19 @@ const cors= require('cors');
 const app = express();
 const bodyParser=require('body-parser');
 const db=require('./db');
+require("dotenv").config();
 //const crypto = require('crypto');
 //var session = require('express-session');
 
-app.use(cors({
-    origin: "*",
-    })
-);
-
-app.use(session({
+/* app.use(session({
 	secret: 'secret',
 	resave: true,
 	saveUninitialized: true
+    })
+); */
+
+app.use(cors({
+    origin: "*",
     })
 );
 
