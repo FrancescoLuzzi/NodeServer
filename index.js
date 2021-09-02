@@ -3,11 +3,23 @@ const cors= require('cors');
 const app = express();
 const bodyParser=require('body-parser');
 const db=require('./db');
+//const crypto = require('crypto');
+//var session = require('express-session');
 
 app.use(cors({
     origin: "*",
-}));
+    })
+);
+
+app.use(session({
+	secret: 'secret',
+	resave: true,
+	saveUninitialized: true
+    })
+);
+
 app.use(express.json())
+
 app.use(bodyParser.urlencoded({
     extended: true
     })
@@ -15,6 +27,10 @@ app.use(bodyParser.urlencoded({
 //============QUERY DEFINITION============
 
 const port= process.env.PORT || 8000;
+
+//const checkLogin="SELECT * FROM utenti WHERE user=? AND password=?"
+//const insertUser="INSERT INTO utenti(user,password) VALUES (?, ?)"
+
 
 const get_tipologie="SELECT * FROM tipologia";
 const insert_tipo="INSERT INTO tipologia(tipo) VALUES (?)";
@@ -44,6 +60,8 @@ function checkDate(data){
     if(data.match(checker_date)!= data) throw "Bad date format!";
 }
 
+//============INPUT HASHER============
+//const sha256 = x => crypto.createHash('sha256').update(x, 'utf8').digest('hex');
 //============APP ROUTES============
 
 //============SEZIONE TIPOLOGIA============
