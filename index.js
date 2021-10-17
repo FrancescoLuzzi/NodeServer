@@ -79,9 +79,8 @@ app.get('/api/getTipologie', function (req, res) {
 });
 
 /*axios.put('/api/addTipologia/TipologiaNuova')*/
-//dovrà essere app.put
 //aggiunta nuova tipologia
-app.get('/api/addTipologia', function (req, res){
+app.put('/api/addTipologia', function (req, res){
     //let tipo=req.body.tipo;
     let tipo=req.query.tipo;
     try{
@@ -98,7 +97,7 @@ app.get('/api/addTipologia', function (req, res){
 
 //questo dovrà diventare app.delete
 //elimina una tipologia
-app.get('/api/deleteTipologia', function (req, res){
+app.delete('/api/deleteTipologia', function (req, res){
     let tipo=req.query.tipo;
     try{
     checkFormat(tipo);
@@ -136,7 +135,7 @@ app.post('/api/addScontrino', function (req, res){
 
 //elimino scontrino
 //dovrà essere .delete
-app.get('/api/deleteScontrino', function (req, res){
+app.delete('/api/deleteScontrino', function (req, res){
     let id=req.query.id;
     db.pool.query(delete_scontrino,[id])
         .then((result)=>{
