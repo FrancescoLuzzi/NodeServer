@@ -36,15 +36,20 @@ const port= process.env.PORT || 8000;
 const get_tipologie="SELECT * FROM tipologia";
 const insert_tipo="INSERT INTO tipologia(tipo) VALUES (?)";
 const delete_tipo="DELETE FROM tipologia WHERE tipo=?";
+const order_by_date=" ORDER BY data";
 
-const get_scontrini="SELECT * FROM scontr WHERE YEAR(data)=?";
-const get_scontrini_by_type= get_scontrini + " AND tipo=?"
-const get_scontrini_by_month=get_scontrini+" AND MONTH(data)=?";
-const get_scontrini_by_month_and_type=get_scontrini_by_month+" AND tipo=?";
-const get_scontrini_by_date="SELECT * FROM scontr WHERE data=?";
-const get_scontrini_by_week="SELECT * FROM scontr WHERE WEEK(data)=WEEK(?) AND YEAR(data)=?"
-const add_scontrino="INSERT INTO scontr(tipo, data, prezzo, descrizione) VALUES (?, ?, ?, ?)";
-const delete_scontrino="DELETE FROM scontr WHERE id=?";
+const _get_scontrini = `SELECT * FROM scontr WHERE YEAR(data)=?`;
+const get_scontrini = _get_scontrini + order_by_date;
+const get_scontrini_by_type = _get_scontrini + ` AND tipo=?` + order_by_date;
+const _get_scontrini_by_month = _get_scontrini + ` AND MONTH(data)=?`;
+const get_scontrini_by_month = _get_scontrini_by_month + order_by_date;
+const get_scontrini_by_month_and_type = _get_scontrini_by_month + ` AND tipo=?` + order_by_date;
+const get_scontrini_by_date = `SELECT * FROM scontr WHERE data=?` + order_by_date;
+const get_scontrini_by_week = `SELECT * FROM scontr WHERE WEEK(data)=WEEK(?) AND YEAR(data)=?` + order_by_date;
+
+const add_scontrino = `INSERT INTO scontr(tipo, data, prezzo, descrizione) VALUES (?, ?, ?, ?)`;
+
+const delete_scontrino = `DELETE FROM scontr WHERE id=?`;
 
 //============INPUT CHECKERS============
 const checker_no_digits= new RegExp("\\d+");
@@ -240,6 +245,6 @@ app.get("/api/getScontriniByWeek", function (req, res) {
 
 //applicazione setuppata e ora la lancio
 app.listen(port);
-        
+
 
 
